@@ -1,7 +1,20 @@
 import { Pagination } from "@discordx/utilities";
 import axios from "axios";
-import { CommandInteraction, MessageEmbed } from "discord.js";
-import { Discord, Slash, SlashGroup, SlashOption } from "discordx";
+import {
+  ButtonInteraction,
+  CommandInteraction,
+  MessageActionRow,
+  MessageButton,
+  MessageEmbed,
+} from "discord.js";
+import {
+  ButtonComponent,
+  Discord,
+  Slash,
+  SlashChoice,
+  SlashGroup,
+  SlashOption,
+} from "discordx";
 import api from "../../configs/api/index.js";
 import {
   convertDate,
@@ -9,6 +22,11 @@ import {
   getCardBody,
   handleErrorMessage,
 } from "../../utilities/helper/index.js";
+
+enum BurnType {
+  id = "Card ID",
+  Rarity = "Rarity",
+}
 
 @Discord()
 @SlashGroup("sive", "SIVE K-Pop Card Game", {
@@ -112,7 +130,6 @@ class CardCommand {
       const pagination = new Pagination(interaction, embeds);
       await pagination.send();
     } catch (error) {
-      console.log(error);
       handleErrorMessage(interaction, error);
     }
   }
@@ -318,7 +335,289 @@ class CardCommand {
         }
       );
 
-      interaction.reply({ embeds: [embedBuilder] });
+      interaction.reply({ embeds: [embedBuilder], ephemeral: hidden });
+    } catch (error) {
+      handleErrorMessage(interaction, error);
+    }
+  }
+
+  @SlashGroup("card")
+  @Slash("burn")
+  async burnCard(
+    @SlashChoice("Card ID", "Card ID")
+    @SlashChoice("Rarity", "Rarity")
+    @SlashOption("type", {
+      description: "Select The Burn Type",
+      required: true,
+    })
+    type: string,
+    @SlashOption("value", {
+      description: "Value of the selected Type",
+      required: true,
+    })
+    value: number,
+    interaction: CommandInteraction
+  ) {
+    try {
+      var url;
+      var body;
+
+      if (type === BurnType.id) {
+        url = `${api.card}/burn`;
+        body = {
+          discordId: interaction.user.id,
+          cardId: value,
+        };
+      } else {
+        url = `${api.card}/burn/all`;
+        body = {
+          discordId: interaction.user.id,
+          rarity: value,
+        };
+      }
+
+      const response = await axios.post(url, body);
+
+      const data = response?.data;
+
+      const embedBuilder = new MessageEmbed();
+      embedBuilder.setColor("GOLD");
+      if (type === BurnType.id) {
+        embedBuilder.setAuthor(
+          `Card With ID ${data.cardId} is added to the burn queue`
+        );
+        embedBuilder.setTitle(
+          `${data.serialNumber} | ${data.rarity} | ${data.fullName}`
+        );
+        if (data.imageName !== null) {
+          embedBuilder.setDescription(
+            `${data.groupName} - ${data.stageName} ( ${data.imageName} )`
+          );
+        } else {
+          embedBuilder.setDescription(`${data.groupName} - ${data.stageName}`);
+        }
+
+        if (data.imageUrl !== null) {
+          embedBuilder.setImage(`${data.imageUrl}`);
+        } else {
+          embedBuilder.setThumbnail(
+            getAvatarUrl(
+              interaction.client.user?.id,
+              interaction.client.user?.avatar
+            )
+          );
+        }
+      } else {
+        embedBuilder.setThumbnail(
+          getAvatarUrl(
+            interaction.client.user?.id,
+            interaction.client.user?.avatar
+          )
+        );
+
+        embedBuilder.setAuthor(
+          `Cards With ${value} Star Rarity Is Added To The Queue`
+        );
+        data.cards.length > 0
+          ? embedBuilder.setTitle(
+              `${data.cards.length} Cards is added to the queue`
+            )
+          : embedBuilder.setTitle(`No Cards is added to the queue`);
+        embedBuilder.setDescription(
+          `Cards that are locked is going to be exempted from the queue`
+        );
+      }
+
+      interaction.reply({ embeds: [embedBuilder], ephemeral: true });
+    } catch (error) {
+      console.log(error);
+      handleErrorMessage(interaction, error);
+    }
+  }
+
+  @SlashGroup("card")
+  @Slash("burnqueue")
+  async pendingBurnCardList(interaction: CommandInteraction): Promise<void> {
+    try {
+      var url = `${api.card}/burn/pending?page=0&size=9`;
+      var response;
+      var body = {
+        discordId: `${interaction.user.id}`,
+      };
+
+      response = await axios.post(url, body);
+
+      const data = response?.data;
+
+      const embeds = [];
+
+      var embedBuilder = new MessageEmbed()
+        .setAuthor(`${interaction.user.username} Burning Queue`)
+        .setColor("GOLD");
+
+      if (data.numberOfElements === 0) {
+        embedBuilder.setTitle(`No Cards In The Queue`);
+        interaction.reply({ embeds: [embedBuilder] });
+      } else {
+        data.content.forEach(
+          (e: { locked: boolean; ownerId: string; cardId: string }) => {
+            var lock = e.locked === true ? "🔒" : "";
+            embedBuilder.addField(
+              `${lock} Card ID - ${e.cardId}`,
+              getCardBody(e),
+              false
+            );
+          }
+        );
+
+        embeds.push(embedBuilder);
+
+        for (var i = 1; i < data.totalPages; i++) {
+          url = `${api.card}/burn/pending?page=${i}&size=9`;
+
+          var tempResponse = await axios.post(url, body);
+
+          const tempData = tempResponse?.data;
+
+          var tempEmbed = new MessageEmbed()
+            .setAuthor(`${interaction.user.username} Cards`)
+            .setColor("GOLD")
+            .setFooter(`Page ${i + 1} of ${data.totalPages}`);
+
+          tempData.content.forEach(
+            (e: { locked: boolean; ownerId: string; cardId: string }) => {
+              var lock = e.locked === true ? "🔒" : "";
+
+              tempEmbed.addField(
+                `${lock} Card ID - ${e.cardId}`,
+                getCardBody(e),
+                false
+              );
+            }
+          );
+
+          embeds.push(tempEmbed);
+        }
+
+        const pagination = new Pagination(interaction, embeds);
+        await pagination.send();
+      }
+    } catch (error) {
+      handleErrorMessage(interaction, error);
+    }
+  }
+
+  @SlashGroup("card")
+  @Slash("removeburn")
+  async removePendingBurnCard(
+    @SlashOption("private", {
+      description: "Whether or not the response is private",
+      required: true,
+    })
+    hidden: boolean,
+    @SlashOption("id", {
+      description: "Card ID - This will remove only one card from queue",
+      required: false,
+    })
+    id: number,
+    interaction: CommandInteraction
+  ) {
+    try {
+      const embedBuilder = new MessageEmbed().setColor("GOLD");
+      if (id !== undefined) {
+        let body = {
+          discordId: interaction.user.id,
+          cardId: id,
+        };
+
+        const response = await axios.post(
+          `${api.card}/burn/single-cancel`,
+          body
+        );
+
+        const data = response?.data;
+
+        embedBuilder.setAuthor(
+          `Card With ID ${data.cardId} is added to the burn queue`
+        );
+        embedBuilder.setTitle(
+          `${data.serialNumber} | ${data.rarity} | ${data.fullName}`
+        );
+        if (data.imageName !== null) {
+          embedBuilder.setDescription(
+            `${data.groupName} - ${data.stageName} ( ${data.imageName} )`
+          );
+        } else {
+          embedBuilder.setDescription(`${data.groupName} - ${data.stageName}`);
+        }
+
+        if (data.imageUrl !== null) {
+          embedBuilder.setImage(`${data.imageUrl}`);
+        } else {
+          embedBuilder.setThumbnail(
+            getAvatarUrl(
+              interaction.client.user?.id,
+              interaction.client.user?.avatar
+            )
+          );
+        }
+      } else {
+        await axios.post(
+          `${api.card}/burn/cancel?discordId=${interaction.user.id}`
+        );
+
+        embedBuilder.setAuthor(`Canceled Pending Card Queue`);
+        embedBuilder.setTitle(`Removed All Cards In The Queue`);
+        embedBuilder.setDescription(`All cards have been returned`);
+        embedBuilder.setThumbnail(
+          getAvatarUrl(
+            interaction.client.user?.id,
+            interaction.client.user?.avatar
+          )
+        );
+      }
+
+      interaction.reply({ embeds: [embedBuilder], ephemeral: hidden });
+    } catch (error) {
+      handleErrorMessage(interaction, error);
+    }
+  }
+
+  @SlashGroup("card")
+  @Slash("confirmburn")
+  async confirmBurn(interaction: CommandInteraction) {
+    try {
+      const embedBuilder = new MessageEmbed();
+      const response = await axios.post(
+        `${api.card}/burn/confirm?discordId=${interaction.user.id}`
+      );
+
+      embedBuilder.setAuthor(`Burned Successfully`);
+      embedBuilder.setTitle(`Burned All The Cards In The Queue`);
+      embedBuilder.setDescription(`You Gained All These Items`);
+      embedBuilder.setThumbnail(
+        getAvatarUrl(
+          interaction.client.user?.id,
+          interaction.client.user?.avatar
+        )
+      );
+      embedBuilder.setFooter(
+        `Check your inventory to see the items`,
+        getAvatarUrl(
+          interaction.client.user?.id,
+          interaction.client.user?.avatar
+        )
+      );
+
+      response?.data.items.forEach((e: { itemName: any; shardQty: any }) => {
+        embedBuilder.addField(
+          `${e.itemName}`,
+          `You Gained ${e.shardQty} `,
+          false
+        );
+      });
+
+      interaction.reply({ embeds: [embedBuilder], ephemeral: true });
     } catch (error) {
       handleErrorMessage(interaction, error);
     }

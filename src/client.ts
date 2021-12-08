@@ -20,7 +20,7 @@ const client = new Client({
   ],
   // If you only want to use guild commands, uncomment this line
   // botGuilds: [(client) => client.guilds.cache.map((guild) => guild.id)],
-  botGuilds: ["819063021191430195"],
+  botGuilds: ["918015788257017937"],
   silent: true,
 });
 

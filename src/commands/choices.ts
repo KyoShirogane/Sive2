@@ -20,7 +20,7 @@
 //   ) {
 //     interaction.reply(what);
 //   }
-
+// 
 //   @Slash("choice")
 //   async choice(
 //     @SlashChoice(TextChoices)
