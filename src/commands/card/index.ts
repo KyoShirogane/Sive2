@@ -1,26 +1,21 @@
 import { Pagination } from "@discordx/utilities";
 import axios from "axios";
 import {
-  ButtonInteraction,
-  CommandInteraction,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed,
+  CommandInteraction, MessageEmbed
 } from "discord.js";
 import {
-  ButtonComponent,
   Discord,
   Slash,
   SlashChoice,
   SlashGroup,
-  SlashOption,
+  SlashOption
 } from "discordx";
 import api from "../../configs/api/index.js";
 import {
   convertDate,
   getAvatarUrl,
   getCardBody,
-  handleErrorMessage,
+  handleErrorMessage
 } from "../../utilities/helper/index.js";
 
 enum BurnType {
@@ -150,8 +145,8 @@ class CardCommand {
       var response = await axios.post(`${api.card}/${id}`);
       var owner = await interaction.client.users.fetch(response.data.ownerId);
 
-      if (owner === interaction.client.user) {
-        embedBuilder.setTitle(`***** IN MARKET *****`);
+      if (owner.bot) {
+        embedBuilder.setTitle(`***** CURRENTLY IN MARKET *****`);
       } else {
         embedBuilder.setTitle(`Owned By ${owner.tag}`);
       }
@@ -228,7 +223,7 @@ class CardCommand {
       var owner = await interaction.client.users.fetch(response.data.ownerId);
 
       if (owner === interaction.client.user) {
-        embedBuilder.setTitle(`***** IN MARKET *****`);
+        embedBuilder.setTitle(`***** CURRENTLY IN MARKET *****`);
       } else {
         embedBuilder.setTitle(`Owned By ${owner.tag}`);
       }
@@ -290,10 +285,10 @@ class CardCommand {
       required: true,
     })
     amount: number,
-    @SlashOption("private", {
+    @SlashOption("hidden", {
       description:
         "This Flag indicate whether you want to send it privately or not",
-      required: false,
+      required: true,
     })
     hidden: boolean,
     @SlashOption("rarity", {
@@ -436,7 +431,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("burnqueue")
+  @Slash("pending-burn")
   async pendingBurnCardList(interaction: CommandInteraction): Promise<void> {
     try {
       var url = `${api.card}/burn/pending?page=0&size=9`;
@@ -508,7 +503,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("removeburn")
+  @Slash("remove-burn")
   async removePendingBurnCard(
     @SlashOption("private", {
       description: "Whether or not the response is private",
@@ -584,7 +579,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("confirmburn")
+  @Slash("confirm-burn")
   async confirmBurn(interaction: CommandInteraction) {
     try {
       const embedBuilder = new MessageEmbed();
@@ -618,6 +613,66 @@ class CardCommand {
       });
 
       interaction.reply({ embeds: [embedBuilder], ephemeral: true });
+    } catch (error) {
+      handleErrorMessage(interaction, error);
+    }
+  }
+
+  @SlashGroup("card")
+  @Slash("upgrade")
+  async upgradeCard(
+    @SlashOption("id", {
+      description: "Card ID - Id of the card to be upgraded",
+      required: true,
+    })
+    id: number,
+    @SlashOption("private", {
+      description: "Whether or not the response is private",
+      required: true,
+    })
+    hidden: boolean,
+    interaction: CommandInteraction
+  ) {
+    try {
+      let body = {
+        discordId: interaction.user.id,
+        cardId: id,
+      };
+
+      body;
+
+      const response = await axios.post(`${api.card}/upgrade`, body);
+
+      const data = response?.data;
+      const embedBuilder = new MessageEmbed();
+
+      embedBuilder.setColor(`#${data.cardColor.replaceAll(`#`, ``)}`);
+      embedBuilder.setAuthor(
+        `Card With ID ${data.cardId} Successfully Upgraded`
+      );
+      embedBuilder.setTitle(
+        `${data.serialNumber} | ${data.rarity} | ${data.fullName}`
+      );
+      if (data.imageName !== null) {
+        embedBuilder.setDescription(
+          `${data.groupName} - ${data.stageName} ( ${data.imageName} )`
+        );
+      } else {
+        embedBuilder.setDescription(`${data.groupName} - ${data.stageName}`);
+      }
+
+      if (data.imageUrl !== null) {
+        embedBuilder.setImage(`${data.imageUrl}`);
+      } else {
+        embedBuilder.setThumbnail(
+          getAvatarUrl(
+            interaction.client.user?.id,
+            interaction.client.user?.avatar
+          )
+        );
+      }
+
+      interaction.reply({ embeds: [embedBuilder], ephemeral: hidden });
     } catch (error) {
       handleErrorMessage(interaction, error);
     }

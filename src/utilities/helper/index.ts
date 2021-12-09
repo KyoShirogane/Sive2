@@ -1,5 +1,4 @@
-import { CommandInteraction, MessageEmbed, User } from "discord.js";
-import { SimpleCommandMessage } from "discordx";
+import { CommandInteraction, MessageEmbed } from "discord.js";
 import moment from "moment";
 
 export const convertDate = (date: string) => {
@@ -35,11 +34,29 @@ export function getCardBody(card: any) {
     totalPower +
     "```";
 
-    return res;
+  return res;
 }
 
-export function handleErrorMessage(interaction: CommandInteraction, error: any) {
-  console.log(error);
+export function combineQuestReward(items: any) {
+  let rewards: string[] = [];
+
+  items.forEach((e: { qty: any; name: any }) => {
+    let reward = `${e.qty}X - ${e.name}`;
+
+    rewards.push(reward);
+  });
+
+  if (rewards.length === 0) {
+    return "No Items";
+  } else {
+    return rewards.join("\n");
+  }
+}
+
+export function handleErrorMessage(
+  interaction: CommandInteraction,
+  error: any
+) {
   if (error.code === "ECONNREFUSED") {
     const embedBuilder = new MessageEmbed()
 
@@ -55,19 +72,31 @@ export function handleErrorMessage(interaction: CommandInteraction, error: any) 
       .setDescription("The Bot is currently offline/under maintenance")
       .setFooter(error.response.headers.date);
 
-      interaction.reply({ embeds: [embedBuilder], ephemeral: true });
+    interaction.reply({ embeds: [embedBuilder], ephemeral: true });
   } else {
+    console.error(error)
+    
     var errorMessage;
+    var title;
+    var footer;
 
-    if(error.response === undefined){
-      console.error(error)
-      errorMessage = "Looks-Like-The-Bot-Need-Something-To-Fix"
+    if (error.response === undefined || error.response.data === undefined) {
+      console.error(error);
+      title = "PLEASE CONTACT THE ADMINS";
+      errorMessage = "sive-needs-to-be-fixed"
+        .replaceAll("-", " ")
+        .replaceAll("error.", "")
+        .toUpperCase();
+      footer = new Date().toTimeString();
+    } else {
+      title = error.response.data.error.toUpperCase();
+      errorMessage = error.response.data.message
+        .replaceAll("player-not-found", "User-Is-Not-Registered")
+        .replaceAll("-", " ")
+        .replaceAll("error.", "")
+        .toUpperCase();
+      footer = error.response.headers.date;
     }
-     errorMessage = error.response.data.message
-      .replaceAll("player-not-found", "User-Is-Not-Registered")
-      .replaceAll("-", " ")
-      .replaceAll("error.", "")
-      .toUpperCase();
 
     const embedBuilder = new MessageEmbed()
 
@@ -79,10 +108,10 @@ export function handleErrorMessage(interaction: CommandInteraction, error: any) 
       )
       .setColor("GOLD")
       .setAuthor("Oops, Something Went Wrong!")
-      .setTitle(error.response.data.error.toUpperCase())
+      .setTitle(title)
       .setDescription(errorMessage)
-      .setFooter(error.response.headers.date);
+      .setFooter(footer);
 
-      interaction.reply({ embeds: [embedBuilder], ephemeral: true });
+    interaction.reply({ embeds: [embedBuilder], ephemeral: true });
   }
 }
