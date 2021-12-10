@@ -98,28 +98,26 @@ class CardCommand {
           url = `${api.card}?page=${i}&size=9&key=${key}`;
         }
 
-        var tempResponse = await axios.post(url, body);
+        const tempResponse = await axios.post(url, body);
 
         const tempData = tempResponse?.data;
 
-        var tempEmbed = new MessageEmbed()
-          .setAuthor(`${interaction.user.username} Cards`)
-          .setColor("GOLD")
-          .setFooter(`Page ${i + 1} of ${data.totalPages}`);
+        var embedBuilder = new MessageEmbed()
+        .setAuthor(`${interaction.user.username} Cards`)
+        .setColor("GOLD");
 
         tempData.content.forEach(
-          (e: { locked: boolean; ownerId: string; cardId: string }) => {
-            var lock = e.locked === true ? "🔒" : "";
+        (e: { locked: boolean; ownerId: string; cardId: string }) => {
+          var lock = e.locked === true ? "🔒" : "";
+          embedBuilder.addField(
+            `${lock} Card ID - ${e.cardId}`,
+            getCardBody(e),
+            false
+          );
+        }
+      );
 
-            tempEmbed.addField(
-              `${lock} Card ID - ${e.cardId}`,
-              getCardBody(e),
-              false
-            );
-          }
-        );
-
-        embeds.push(tempEmbed);
+      embeds.push(embedBuilder);
       }
 
       const pagination = new Pagination(interaction, embeds);
@@ -477,7 +475,6 @@ class CardCommand {
           var tempEmbed = new MessageEmbed()
             .setAuthor(`${interaction.user.username} Cards`)
             .setColor("GOLD")
-            .setFooter(`Page ${i + 1} of ${data.totalPages}`);
 
           tempData.content.forEach(
             (e: { locked: boolean; ownerId: string; cardId: string }) => {

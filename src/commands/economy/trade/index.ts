@@ -71,7 +71,6 @@ class TradeCommand {
 
         interaction.reply({ embeds: [embedBuilder] });
       } else {
-        embedBuilder.setFooter(`Page 1 of ${data.totalPages}`);
         for await (const e of data.content) {
           let playerCards: string[] = [];
           let oppositionCards: string[] = [];
@@ -141,7 +140,6 @@ class TradeCommand {
           var tempEmbed = new MessageEmbed()
             .setAuthor(title)
             .setColor("GOLD")
-            .setFooter(`Page ${i + 1} of ${data.totalPages}`);
 
           for await (const e of tempData.content) {
             let playerCards: string[] = [];

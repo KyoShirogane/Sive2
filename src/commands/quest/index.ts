@@ -62,7 +62,6 @@ class QuestCommand {
           var tempEmbed = new MessageEmbed()
             .setAuthor(`${interaction.user.username} Quests`)
             .setColor("GOLD")
-            .setFooter(`Page ${i + 1} of ${data.totalPages}`);
 
           tempData.content.forEach(
             (e: {
