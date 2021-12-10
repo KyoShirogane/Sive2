@@ -15,7 +15,7 @@ import {
 })
 class MarketCommand {
   @SlashGroup("market")
-  @Slash("list")
+  @Slash("list", {description: "Display cards being sold on market"})
   async displayMarketItems(
     @SlashOption("search", {
       description: "Search Parameter",
@@ -126,7 +126,7 @@ class MarketCommand {
   }
 
   @SlashGroup("market")
-  @Slash("my-listing")
+  @Slash("my-listing", {description: "Display your market listing"})
   async listedMarketItems(
     @SlashOption("search", {
       description: "Search Parameter",
@@ -239,7 +239,7 @@ class MarketCommand {
   }
 
   @SlashGroup("market")
-  @Slash("buy")
+  @Slash("buy", {description: "Purchase card from the market"})
   async purchaseItem(
     @SlashOption("id", {
       description: "Item ID",
@@ -274,7 +274,7 @@ class MarketCommand {
   }
 
   @SlashGroup("market")
-  @Slash("sell")
+  @Slash("sell", {description: "List your item into the market"})
   async sellItem(
     @SlashOption("id", {
       description: "Card ID",

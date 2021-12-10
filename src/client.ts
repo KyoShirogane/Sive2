@@ -1,10 +1,7 @@
-import "reflect-metadata";
+import { dirname, importx } from "@discordx/importer";
 import { Intents, Interaction, Message } from "discord.js";
 import { Client } from "discordx";
-import { dirname, importx } from "@discordx/importer";
-import * as dotenv from "dotenv";
-
-dotenv.config();
+import "dotenv/config";
 
 const client = new Client({
   simpleCommand: {
@@ -20,7 +17,7 @@ const client = new Client({
   ],
   // If you only want to use guild commands, uncomment this line
   // botGuilds: [(client) => client.guilds.cache.map((guild) => guild.id)],
-  botGuilds: ["918015788257017937"],
+  // botGuilds: ["819063021191430195"],
   silent: true,
 });
 

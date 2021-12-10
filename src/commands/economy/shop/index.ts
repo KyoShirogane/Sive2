@@ -13,7 +13,7 @@ import {
 })
 class ShopCommand {
   @SlashGroup("shop")
-  @Slash("list")
+  @Slash("list", {description: "Display available items in the store"})
   async displayShop(interaction: CommandInteraction) {
     try {
       const response = await axios.get(`${api.game}/shop/list`);
@@ -39,7 +39,7 @@ class ShopCommand {
   }
 
   @SlashGroup("shop")
-  @Slash("buy")
+  @Slash("buy", {description: "Purchase item from the shop"})
   async purchaseItem(
     @SlashOption("id", {
       description: "Item ID",

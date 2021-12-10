@@ -37,6 +37,15 @@ export function getCardBody(card: any) {
   return res;
 }
 
+export function getSimpleCard(card: any) {
+  var eraName = card.eraName != null ? " (" + card.eraName + ")" : "";
+
+  var res =
+    "```" + `[${card.cardId}] | ${card.series} ${card.rarity} |${eraName} ${card.stageName}` + "```";
+
+  return res;
+}
+
 export function combineQuestReward(items: any) {
   let rewards: string[] = [];
 
@@ -74,8 +83,8 @@ export function handleErrorMessage(
 
     interaction.reply({ embeds: [embedBuilder], ephemeral: true });
   } else {
-    console.error(error)
-    
+    console.error(error);
+
     var errorMessage;
     var title;
     var footer;

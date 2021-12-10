@@ -13,7 +13,7 @@ import {
 })
 class QuestCommand {
   @SlashGroup("quest")
-  @Slash("list")
+  @Slash("list", {description: "Available quests {you can only take 5 simultaneously}"})
   async getQuestList(interaction: CommandInteraction): Promise<void> {
     try {
       var url = `${api.quest}?page=0&size=5`;
@@ -94,7 +94,7 @@ class QuestCommand {
   }
 
   @SlashGroup("quest")
-  @Slash("running")
+  @Slash("running", {description: "Display your current ongoing quests"})
   async getPlayerQuests(interaction: CommandInteraction) {
     try {
       var url = `${api.quest}/player/${interaction.user.id}?page=0&size=5`;
@@ -143,7 +143,7 @@ class QuestCommand {
   }
 
   @SlashGroup("quest")
-  @Slash("take")
+  @Slash("take", {description: "Take quest"})
   async takeQuest(
     @SlashOption("id", {
       description: "Quest ID",
@@ -201,7 +201,7 @@ class QuestCommand {
   }
 
   @SlashGroup("quest")
-  @Slash("submit")
+  @Slash("submit", {description: "Submit your ongoing quests"})
   async completeQuest(
     @SlashOption("hidden", {
       description: "The flag to indicate whether the message is private or not",

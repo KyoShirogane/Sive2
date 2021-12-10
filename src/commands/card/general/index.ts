@@ -10,13 +10,13 @@ import {
   SlashGroup,
   SlashOption
 } from "discordx";
-import api from "../../configs/api/index.js";
+import api from "../../../configs/api/index.js";
 import {
   convertDate,
   getAvatarUrl,
   getCardBody,
   handleErrorMessage
-} from "../../utilities/helper/index.js";
+} from "../../../utilities/helper/index.js";
 
 enum BurnType {
   id = "Card ID",
@@ -29,7 +29,7 @@ enum BurnType {
 })
 class CardCommand {
   @SlashGroup("card")
-  @Slash("list")
+  @Slash("list", {description: "Display all the cards you have"})
   async displayCard(
     @SlashOption("search", {
       description: "Search Key for idol name, idol group and nationality",
@@ -130,7 +130,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("view")
+  @Slash("view", {description: "View a specific card through card ID"})
   async viewCard(
     @SlashOption("id", {
       description: "ID of the card",
@@ -201,7 +201,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("lock")
+  @Slash("lock", {description: "Lock/Unlock your card"})
   async lockCard(
     @SlashOption("id", {
       description: "ID of the card",
@@ -278,7 +278,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("summon")
+  @Slash("summon", {description: "Summon idol cards {requiring tickets}"})
   async summonCard(
     @SlashOption("amount", {
       description: "Amount of cards to summon (Uses Ticket)",
@@ -337,7 +337,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("burn")
+  @Slash("burn", {description: "Burn idol cards to gain fragments"})
   async burnCard(
     @SlashChoice("Card ID", "Card ID")
     @SlashChoice("Rarity", "Rarity")
@@ -431,7 +431,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("pending-burn")
+  @Slash("pending-burn", {description: "Display your unconfirmed burn requests"})
   async pendingBurnCardList(interaction: CommandInteraction): Promise<void> {
     try {
       var url = `${api.card}/burn/pending?page=0&size=9`;
@@ -503,7 +503,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("remove-burn")
+  @Slash("remove-burn", {description: "Remove cards from the burn requests"})
   async removePendingBurnCard(
     @SlashOption("private", {
       description: "Whether or not the response is private",
@@ -579,7 +579,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("confirm-burn")
+  @Slash("confirm-burn", {description: "Confirm your burn requests"})
   async confirmBurn(interaction: CommandInteraction) {
     try {
       const embedBuilder = new MessageEmbed();
@@ -619,7 +619,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("upgrade")
+  @Slash("upgrade", {description: "Upgrade your card rarity"})
   async upgradeCard(
     @SlashOption("id", {
       description: "Card ID - Id of the card to be upgraded",

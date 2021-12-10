@@ -1,23 +1,19 @@
 import axios from "axios";
-import { CommandInteraction, MessageEmbed } from "discord.js";
-import {
-  Discord, Slash,
-  SlashGroup,
-  SlashOption
-} from "discordx";
+import { CommandInteraction, MessageEmbed, User } from "discord.js";
+import { Discord, Slash, SlashGroup, SlashOption } from "discordx";
 import api from "../../configs/api/index.js";
 import {
   convertDate,
   getAvatarUrl,
-  handleErrorMessage
+  handleErrorMessage,
 } from "../../utilities/helper/index.js";
 
 @Discord()
 @SlashGroup("sive", "SIVE K-Pop Card Game", {
-  player: "Player Commands"
+  player: "Player Commands",
 })
 class PlayerCommand {
-  @Slash("profile")
+  @Slash("profile", {description: "Display your profile"})
   @SlashGroup("player")
   async profile(interaction: CommandInteraction) {
     try {
@@ -47,13 +43,17 @@ class PlayerCommand {
     }
   }
 
-  @Slash("inventory")
+  @Slash("inventory", {description: "Display your inventory"})
   @SlashGroup("player")
-  async inventory(@SlashOption("private", {
-    description: "This flag will show whether you wish to display your inventory to yourself or to the channel",
-    required: true,
-  })
-  hidden: boolean,interaction: CommandInteraction) {
+  async inventory(
+    @SlashOption("private", {
+      description:
+        "This flag will show whether you wish to display your inventory to yourself or to the channel",
+      required: true,
+    })
+    hidden: boolean,
+    interaction: CommandInteraction
+  ) {
     try {
       const response = await axios.get(
         `${api.players}/${interaction.user.id}/inventory`
@@ -82,13 +82,13 @@ class PlayerCommand {
         );
       }
 
-      interaction.reply({ embeds: [embedBuilder], ephemeral: hidden})
+      interaction.reply({ embeds: [embedBuilder], ephemeral: hidden });
     } catch (error) {
       handleErrorMessage(interaction, error);
     }
   }
 
-  @Slash("balance")
+  @Slash("balance", {description: "Display your current balance"})
   @SlashGroup("player")
   async balance(interaction: CommandInteraction) {
     try {
@@ -113,7 +113,7 @@ class PlayerCommand {
     }
   }
 
-  @Slash("register")
+  @Slash("register", {description: "Transfer balance to your friend"})
   @SlashGroup("player")
   async register(interaction: CommandInteraction) {
     try {
@@ -142,7 +142,7 @@ class PlayerCommand {
     }
   }
 
-  @Slash("login")
+  @Slash("login", {description: "Login daily to receive extra reward"})
   @SlashGroup("player")
   async login(interaction: CommandInteraction) {
     try {
@@ -175,7 +175,7 @@ class PlayerCommand {
     }
   }
 
-  @Slash("transfer")
+  @Slash("transfer", {description: "Transfer balance to your friend"})
   @SlashGroup("player")
   async transferBalance(
     @SlashOption("amount", {
@@ -183,11 +183,11 @@ class PlayerCommand {
       required: true,
     })
     amount: number,
-    @SlashOption("id", {
-      description: "ID of the player to send",
+    @SlashOption("opposition", {
+      description: "Destination player to sent money",
       required: true,
     })
-    id: string,
+    opposition: User,
     @SlashOption("message", {
       description: "Message to send alongside the transfer",
       required: false,
@@ -199,14 +199,14 @@ class PlayerCommand {
       var request;
       if (message !== undefined) {
         request = {
-          receiverId: id,
+          receiverId: opposition.id,
           discordId: interaction.user.id,
           message: message,
           amount: amount,
         };
       } else {
         request = {
-          receiverId: id,
+          receiverId: opposition.id,
           discordId: interaction.user.id,
           amount: amount,
         };
@@ -216,13 +216,14 @@ class PlayerCommand {
         `${api.game}/balance/transfer`,
         request
       );
-      const receiver = await interaction.client.users.fetch(`${id}`);
 
       const data = response.data;
 
       const embedBuilder = new MessageEmbed()
         .setAuthor(`Transfer Completed`)
-        .setTitle(`You have transfered ${data.amount} to ${receiver.username}`)
+        .setTitle(
+          `You have transfered ${data.amount} to ${opposition.username}`
+        )
         .setDescription(`Your Current Balance is now: ${data.newBalance}$`)
         .setThumbnail(
           getAvatarUrl(interaction.user.id, interaction.user.avatar)
