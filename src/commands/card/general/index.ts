@@ -78,16 +78,15 @@ class CardCommand {
         .setAuthor(`${interaction.user.username} Cards`)
         .setColor("GOLD");
 
-      data.content.forEach(
-        (e: { locked: boolean; ownerId: string; cardId: string }) => {
-          var lock = e.locked === true ? "🔒" : "";
-          embedBuilder.addField(
-            `${lock} Card ID - ${e.cardId}`,
-            getCardBody(e),
-            false
-          );
-        }
-      );
+      for await (const e of data.content) {
+        
+        var lock = e.locked === true ? "🔒" : "";
+        embedBuilder.addField(
+          `${lock} Card ID - ${e.cardId}`,
+          getCardBody(e),
+          false
+        );
+      }
 
       embeds.push(embedBuilder);
 
