@@ -4,7 +4,8 @@ import { CommandInteraction, MessageEmbed } from "discord.js";
 import { Discord, Slash, SlashGroup, SlashOption } from "discordx";
 import api from "../../configs/api/index.js";
 import {
-    combineQuestReward, handleErrorMessage
+  combineQuestReward,
+  handleErrorMessage,
 } from "../../utilities/helper/index.js";
 
 @Discord()
@@ -13,7 +14,9 @@ import {
 })
 class QuestCommand {
   @SlashGroup("quest")
-  @Slash("list", {description: "Available quests {you can only take 5 simultaneously}"})
+  @Slash("list", {
+    description: "Available quests {you can only take 5 simultaneously}",
+  })
   async getQuestList(interaction: CommandInteraction): Promise<void> {
     try {
       var url = `${api.quest}?page=0&size=5`;
@@ -61,7 +64,7 @@ class QuestCommand {
 
           var tempEmbed = new MessageEmbed()
             .setAuthor(`${interaction.user.username} Quests`)
-            .setColor("GOLD")
+            .setColor("GOLD");
 
           tempData.content.forEach(
             (e: {
@@ -93,7 +96,7 @@ class QuestCommand {
   }
 
   @SlashGroup("quest")
-  @Slash("running", {description: "Display your current ongoing quests"})
+  @Slash("running", { description: "Display your current ongoing quests" })
   async getPlayerQuests(interaction: CommandInteraction) {
     try {
       var url = `${api.quest}/player/${interaction.user.id}?page=0&size=5`;
@@ -107,33 +110,40 @@ class QuestCommand {
         .setAuthor(`${interaction.user.username.toUpperCase()} Quests`)
         .setColor("GOLD");
 
-      data.quest.forEach(
-        (e: {
-          durationLeft: any;
-          quest: {
-            id: any;
-            name: any;
-            narration: any;
-            rarity: any;
-            prize: { money: any; items: any };
-          };
-        }) => {
-          var duration =
-            e.durationLeft > 0
-              ? `${e.durationLeft} Minutes Remaining`
-              : `Completed`;
+      if (data.quest.length > 0) {
+        data.quest.forEach(
+          (e: {
+            durationLeft: any;
+            quest: {
+              id: any;
+              name: any;
+              narration: any;
+              rarity: any;
+              prize: { money: any; items: any };
+            };
+          }) => {
+            var duration =
+              e.durationLeft > 0
+                ? `${e.durationLeft} Minutes Remaining`
+                : `Completed`;
 
-          embedBuilder.addField(
-            `Quest ID - ${e.quest.id}`,
-            `**${e.quest.name}**\n${e.quest.narration} \n${duration}\n${
-              e.quest.rarity
-            }Star\n**Rewards**\n${e.quest.prize.money}$\n${combineQuestReward(
-              e.quest.prize.items
-            )}\n`,
-            true
-          );
-        }
-      );
+            embedBuilder.addField(
+              `Quest ID - ${e.quest.id}`,
+              `**${e.quest.name}**\n${e.quest.narration} \n${duration}\n${
+                e.quest.rarity
+              }Star\n**Rewards**\n${e.quest.prize.money}$\n${combineQuestReward(
+                e.quest.prize.items
+              )}\n`,
+              true
+            );
+          }
+        );
+      } else {
+        embedBuilder.setTitle(`**You have no running quest**`);
+        embedBuilder.setDescription(
+          `You can take more quests with **sive quest take** command`
+        );
+      }
 
       interaction.reply({ embeds: [embedBuilder], ephemeral: true });
     } catch (error) {
@@ -142,7 +152,7 @@ class QuestCommand {
   }
 
   @SlashGroup("quest")
-  @Slash("take", {description: "Take quest"})
+  @Slash("take", { description: "Take quest" })
   async takeQuest(
     @SlashOption("id", {
       description: "Quest ID",
@@ -162,45 +172,49 @@ class QuestCommand {
 
     interaction: CommandInteraction
   ) {
-    const embedBuilder = new MessageEmbed()
-      .setAuthor(`Quests obtained!`)
-      .setColor(`GOLD`)
-      .setDescription(`**Rewards List**`);
+    try {
+      const embedBuilder = new MessageEmbed()
+        .setAuthor(`Quests obtained!`)
+        .setColor(`GOLD`)
+        .setDescription(`**Rewards List**`);
 
-    let body = {
-      discordId: interaction.user.id,
-      questId: id,
-      qty: qty,
-    };
+      let body = {
+        discordId: interaction.user.id,
+        questId: id,
+        qty: qty,
+      };
 
-    const response = await axios.post(`${api.quest}/run`, body);
-    const data = response?.data;
+      const response = await axios.post(`${api.quest}/run`, body);
+      const data = response?.data;
 
-    data.forEach(
-      (e: {
-        id: any;
-        quest: {
+      data.forEach(
+        (e: {
           id: any;
-          name: any;
-          duration: any;
-          prize: { money: any; items: any; };
-        };
-      }) => {
-        embedBuilder.addField(
-          `[${e.id}] ${e.quest.name}`,
-          `${e.quest.duration} Minutes\n${e.quest.prize.money}$\n${combineQuestReward(
-            e.quest.prize.items
-          )}`,
-          false
-        );
-      }
-    );
+          quest: {
+            id: any;
+            name: any;
+            duration: any;
+            prize: { money: any; items: any };
+          };
+        }) => {
+          embedBuilder.addField(
+            `[${e.id}] ${e.quest.name}`,
+            `${e.quest.duration} Minutes\n${
+              e.quest.prize.money
+            }$\n${combineQuestReward(e.quest.prize.items)}`,
+            false
+          );
+        }
+      );
 
-    interaction.reply({ embeds: [embedBuilder], ephemeral: hidden });
+      interaction.reply({ embeds: [embedBuilder], ephemeral: hidden });
+    } catch (error) {
+      handleErrorMessage(interaction, error);
+    }
   }
 
   @SlashGroup("quest")
-  @Slash("submit", {description: "Submit your ongoing quests"})
+  @Slash("submit", { description: "Submit your ongoing quests" })
   async completeQuest(
     @SlashOption("hidden", {
       description: "The flag to indicate whether the message is private or not",
@@ -227,13 +241,20 @@ class QuestCommand {
       const response = await axios.post(`${api.quest}/submit`, body);
       const data = response?.data;
 
-      embedBuilder.addField(
-        `[${data.id}] ${data.quest.name}`,
-        `${data.quest.prize.money}$\n${combineQuestReward(
-          data.quest.prize.items
-        )}`,
-        false
-      );
+      if (response.data.length > 0) {
+        embedBuilder.addField(
+          `[${data.id}] ${data.quest.name}`,
+          `${data.quest.prize.money}$\n${combineQuestReward(
+            data.quest.prize.items
+          )}`,
+          false
+        );
+      } else {
+        embedBuilder.setTitle(`**Quests are still ongoing!**`);
+        embedBuilder.setDescription(
+          `Check their progress by using **sive quest running** command!`
+        );
+      }
     } else {
       let body = {
         discordId: interaction.user.id,
@@ -242,20 +263,27 @@ class QuestCommand {
       const response = await axios.post(`${api.quest}/submit/all`, body);
       const data = response?.data;
 
-      data.forEach(
-        (e: {
-          id: any;
-          quest: { id: any; name: any; prize: { money: any; items: any } };
-        }) => {
-          embedBuilder.addField(
-            `[${e.id}] ${e.quest.name}`,
-            `${e.quest.prize.money}$\n${combineQuestReward(
-              e.quest.prize.items
-            )}`,
-            false
-          );
-        }
-      );
+      if (response.data.length > 0) {
+        data.forEach(
+          (e: {
+            id: any;
+            quest: { id: any; name: any; prize: { money: any; items: any } };
+          }) => {
+            embedBuilder.addField(
+              `[${e.id}] ${e.quest.name}`,
+              `${e.quest.prize.money}$\n${combineQuestReward(
+                e.quest.prize.items
+              )}`,
+              false
+            );
+          }
+        );
+      } else {
+        embedBuilder.setTitle(`**Quests are still ongoing!**`);
+        embedBuilder.setDescription(
+          `Check their progress by using **sive quest running** command!`
+        );
+      }
     }
 
     interaction.reply({ embeds: [embedBuilder], ephemeral: hidden });
