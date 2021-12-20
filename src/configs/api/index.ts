@@ -5,7 +5,8 @@ const api = {
   quest: `${process.env.API_URL}/${process.env.API_VERSION}/quests`,
   market: `${process.env.API_URL}/${process.env.API_VERSION}/market`,
   tradelist: `${process.env.API_URL}/${process.env.API_VERSION}/my-trades`,
-  trade: `${process.env.API_URL}/${process.env.API_VERSION}/trades`
+  trade: `${process.env.API_URL}/${process.env.API_VERSION}/trades`,
+  help: `${process.env.API_URL}/${process.env.API_VERSION}/guideline-config`
 };
 
 export default api;

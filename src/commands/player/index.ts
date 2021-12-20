@@ -13,7 +13,7 @@ import {
   player: "Player Commands",
 })
 class PlayerCommand {
-  @Slash("profile", {description: "Display your profile"})
+  @Slash("profile", { description: "Display your profile" })
   @SlashGroup("player")
   async profile(interaction: CommandInteraction) {
     try {
@@ -43,7 +43,7 @@ class PlayerCommand {
     }
   }
 
-  @Slash("inventory", {description: "Display your inventory"})
+  @Slash("inventory", { description: "Display your inventory" })
   @SlashGroup("player")
   async inventory(
     @SlashOption("private", {
@@ -88,7 +88,7 @@ class PlayerCommand {
     }
   }
 
-  @Slash("balance", {description: "Display your current balance"})
+  @Slash("balance", { description: "Display your current balance" })
   @SlashGroup("player")
   async balance(interaction: CommandInteraction) {
     try {
@@ -113,7 +113,7 @@ class PlayerCommand {
     }
   }
 
-  @Slash("register", {description: "Transfer balance to your friend"})
+  @Slash("register", { description: "Transfer balance to your friend" })
   @SlashGroup("player")
   async register(interaction: CommandInteraction) {
     try {
@@ -129,7 +129,7 @@ class PlayerCommand {
           `${interaction.user.username.toUpperCase()} Is now registered to SIVE!`
         )
         .setDescription(
-          `Please do **/help** to familiarize yourself with the commands ^^`
+          `Please do **/sive game help** to familiarize yourself with the commands ^^`
         )
         .setThumbnail(
           getAvatarUrl(interaction.user.id, interaction.user.avatar)
@@ -142,7 +142,7 @@ class PlayerCommand {
     }
   }
 
-  @Slash("login", {description: "Login daily to receive extra reward"})
+  @Slash("login", { description: "Login daily to receive extra reward" })
   @SlashGroup("player")
   async login(interaction: CommandInteraction) {
     try {
@@ -175,7 +175,7 @@ class PlayerCommand {
     }
   }
 
-  @Slash("transfer", {description: "Transfer balance to your friend"})
+  @Slash("transfer", { description: "Transfer balance to your friend" })
   @SlashGroup("player")
   async transferBalance(
     @SlashOption("amount", {
