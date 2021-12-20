@@ -6,7 +6,9 @@ const api = {
   market: `${process.env.API_URL}/${process.env.API_VERSION}/market`,
   tradelist: `${process.env.API_URL}/${process.env.API_VERSION}/my-trades`,
   trade: `${process.env.API_URL}/${process.env.API_VERSION}/trades`,
-  help: `${process.env.API_URL}/${process.env.API_VERSION}/guideline-config`
+  help: `${process.env.API_URL}/${process.env.API_VERSION}/guideline-config`,
+  leaderboard: `${process.env.API_URL}/${process.env.API_VERSION}/leaderboard`,
+
 };
 
 export default api;

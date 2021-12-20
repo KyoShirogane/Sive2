@@ -1,21 +1,13 @@
 import { Pagination } from "@discordx/utilities";
 import axios from "axios";
-import {
-  CommandInteraction, MessageEmbed
-} from "discord.js";
-import {
-  Discord,
-  Slash,
-  SlashChoice,
-  SlashGroup,
-  SlashOption
-} from "discordx";
+import { CommandInteraction, MessageEmbed } from "discord.js";
+import { Discord, Slash, SlashChoice, SlashGroup, SlashOption } from "discordx";
 import api from "../../../configs/api/index.js";
 import {
   convertDate,
   getAvatarUrl,
   getCardBody,
-  handleErrorMessage
+  handleErrorMessage,
 } from "../../../utilities/helper/index.js";
 
 enum BurnType {
@@ -29,7 +21,7 @@ enum BurnType {
 })
 class CardCommand {
   @SlashGroup("card")
-  @Slash("list", {description: "Display all the cards you have"})
+  @Slash("list", { description: "Display all the cards you have" })
   async displayCard(
     @SlashOption("search", {
       description: "Search Key for idol name, idol group and nationality",
@@ -79,7 +71,6 @@ class CardCommand {
         .setColor("GOLD");
 
       for await (const e of data.content) {
-        
         var lock = e.locked === true ? "🔒" : "";
         embedBuilder.addField(
           `${lock} Card ID - ${e.cardId}`,
@@ -102,21 +93,21 @@ class CardCommand {
         const tempData = tempResponse?.data;
 
         var embedBuilder = new MessageEmbed()
-        .setAuthor(`${interaction.user.username} Cards`)
-        .setColor("GOLD");
+          .setAuthor(`${interaction.user.username} Cards`)
+          .setColor("GOLD");
 
         tempData.content.forEach(
-        (e: { locked: boolean; ownerId: string; cardId: string }) => {
-          var lock = e.locked === true ? "🔒" : "";
-          embedBuilder.addField(
-            `${lock} Card ID - ${e.cardId}`,
-            getCardBody(e),
-            false
-          );
-        }
-      );
+          (e: { locked: boolean; ownerId: string; cardId: string }) => {
+            var lock = e.locked === true ? "🔒" : "";
+            embedBuilder.addField(
+              `${lock} Card ID - ${e.cardId}`,
+              getCardBody(e),
+              false
+            );
+          }
+        );
 
-      embeds.push(embedBuilder);
+        embeds.push(embedBuilder);
       }
 
       const pagination = new Pagination(interaction, embeds);
@@ -127,7 +118,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("view", {description: "View a specific card through card ID"})
+  @Slash("view", { description: "View a specific card through card ID" })
   async viewCard(
     @SlashOption("id", {
       description: "ID of the card",
@@ -198,7 +189,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("lock", {description: "Lock/Unlock your card"})
+  @Slash("lock", { description: "Lock/Unlock your card" })
   async lockCard(
     @SlashOption("id", {
       description: "ID of the card",
@@ -275,8 +266,10 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("summon", {description: "Summon idol cards {requiring tickets}"})
-  async summonCard(
+  @Slash("standard-summon", {
+    description: "Summon idol standard cards {requiring tickets}",
+  })
+  async summonStandardCard(
     @SlashOption("amount", {
       description: "Amount of cards to summon (Uses Ticket)",
       required: true,
@@ -288,9 +281,13 @@ class CardCommand {
       required: true,
     })
     hidden: boolean,
+    @SlashChoice("★☆☆☆☆", 1)
+    @SlashChoice("★★☆☆☆", 2)
+    @SlashChoice("★★★☆☆", 3)
+    @SlashChoice("★★★★☆", 4)
+    @SlashChoice("★★★★★", 5)
     @SlashOption("rarity", {
-      description:
-        "If being included it will uses the ticket according to the rarity level",
+      description: "Card Rarity",
       required: false,
     })
     rarity: number,
@@ -334,7 +331,63 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("burn", {description: "Burn idol cards to gain fragments"})
+  @Slash("gender-summon", {
+    description: "Summon idol gender cards {requiring tickets}",
+  })
+  async summonGenderCard(
+    @SlashOption("amount", {
+      description: "Amount of cards to summon (Uses Ticket)",
+      required: true,
+    })
+    amount: number,
+    @SlashChoice("Male Idol", "M")
+    @SlashChoice("Female Idol", "F")
+    @SlashOption("gender", {
+      description: "Idol Gender",
+      required: true,
+    })
+    gender: string,
+    @SlashOption("hidden", {
+      description:
+        "This Flag indicate whether you want to send it privately or not",
+      required: true,
+    })
+    hidden: boolean,
+    interaction: CommandInteraction
+  ) {
+    try {
+      var url = `${api.game}/inventory/gender-summon?gender=${gender}`;
+
+      let body = {
+        amount: amount,
+        discordId: interaction.user.id,
+      };
+
+      var response = await axios.post(url, body);
+
+      const data = response?.data;
+
+      const embedBuilder = new MessageEmbed();
+
+      data.forEach(
+        (e: { locked: boolean; ownerId: string; cardId: string }) => {
+          var lock = e.locked === true ? "🔒" : "";
+          embedBuilder.addField(
+            `${lock} Card ID - ${e.cardId}`,
+            getCardBody(e),
+            false
+          );
+        }
+      );
+
+      interaction.reply({ embeds: [embedBuilder], ephemeral: hidden });
+    } catch (error) {
+      handleErrorMessage(interaction, error);
+    }
+  }
+
+  @SlashGroup("card")
+  @Slash("burn", { description: "Burn idol cards to gain fragments" })
   async burnCard(
     @SlashChoice("Card ID", "Card ID")
     @SlashChoice("Rarity", "Rarity")
@@ -428,7 +481,9 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("pending-burn", {description: "Display your unconfirmed burn requests"})
+  @Slash("pending-burn", {
+    description: "Display your unconfirmed burn requests",
+  })
   async pendingBurnCardList(interaction: CommandInteraction): Promise<void> {
     try {
       var url = `${api.card}/burn/pending?page=0&size=9`;
@@ -473,7 +528,7 @@ class CardCommand {
 
           var tempEmbed = new MessageEmbed()
             .setAuthor(`${interaction.user.username} Cards`)
-            .setColor("GOLD")
+            .setColor("GOLD");
 
           tempData.content.forEach(
             (e: { locked: boolean; ownerId: string; cardId: string }) => {
@@ -499,7 +554,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("remove-burn", {description: "Remove cards from the burn requests"})
+  @Slash("remove-burn", { description: "Remove cards from the burn requests" })
   async removePendingBurnCard(
     @SlashOption("private", {
       description: "Whether or not the response is private",
@@ -575,7 +630,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("confirm-burn", {description: "Confirm your burn requests"})
+  @Slash("confirm-burn", { description: "Confirm your burn requests" })
   async confirmBurn(interaction: CommandInteraction) {
     try {
       const embedBuilder = new MessageEmbed();
@@ -615,7 +670,7 @@ class CardCommand {
   }
 
   @SlashGroup("card")
-  @Slash("upgrade", {description: "Upgrade your card rarity"})
+  @Slash("upgrade", { description: "Upgrade your card rarity" })
   async upgradeCard(
     @SlashOption("id", {
       description: "Card ID - Id of the card to be upgraded",

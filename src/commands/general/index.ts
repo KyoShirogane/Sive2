@@ -1,7 +1,7 @@
 import { Pagination } from "@discordx/utilities";
 import axios from "axios";
 import { CommandInteraction, MessageEmbed } from "discord.js";
-import { Discord, Slash, SlashGroup } from "discordx";
+import { Discord, Slash, SlashGroup, SlashOption } from "discordx";
 import api from "../../configs/api/index.js";
 import {
   getAvatarUrl,
@@ -153,6 +153,81 @@ class GeneralCommands {
 
       const pagination = new Pagination(interaction, embeds);
       await pagination.send();
+    } catch (error) {
+      handleErrorMessage(interaction, error);
+    }
+  }
+
+  @SlashGroup(`game`)
+  @Slash("leaderboard", { description: "Ranking of top earner in SIVE" })
+  async leaderboard(interaction: CommandInteraction) {
+    try {
+      const response = await axios.get(`${api.leaderboard}/balance`);
+
+      var data = response?.data;
+
+      const embedBuilder = new MessageEmbed()
+        .setAuthor(`Global Leaderboard of SIVE`)
+        .setTitle(`SIVE Top Earners`)
+        .setDescription(`Top Players who have the most money on SIVE`)
+        .setColor(`GOLD`);
+
+      for await (const e of data) {
+        var player = await interaction.client.users.fetch(e.discordId);
+
+        embedBuilder.addField(
+          `[${e.rank}] ${player.username} (${player.tag})`,
+          `Current Balance: ${e.balance}`,
+          false
+        );
+      }
+
+      interaction.reply({ embeds: [embedBuilder] });
+    } catch (error) {
+      handleErrorMessage(interaction, error);
+    }
+  }
+
+  @SlashGroup(`game`)
+  @Slash("redeem", { description: "Redeem code to earn rewards in SIVE" })
+  async redeemCode(
+    @SlashOption("code", {
+      description: "Redeem Code to redeem",
+      required: true,
+    })
+    code: string,
+    interaction: CommandInteraction
+  ) {
+    var maskedCode = `${code.slice(-3)}`;
+    try {
+      let body = {
+        code: code,
+        discordId: interaction.user.id,
+      };
+      const response = await axios.post(`${api.game}/redeem`, body);
+      var data = response?.data;
+
+      var embedBuilder = new MessageEmbed()
+        .setAuthor(`Successfully Redeemed A Code`)
+        .setTitle(`You Have Redeemed Code [*****${maskedCode}]`)
+        .setDescription(`You Gained ${data.balance}$`)
+        .setColor(`GOLD`)
+        .setThumbnail(
+          getAvatarUrl(
+            interaction.client.user?.id,
+            interaction.client.user?.avatar
+          )
+        );
+
+      data.prizes.forEach((e: { qty: any; name: any; description: any }) => {
+        embedBuilder.addField(
+          `**${e.qty}X ${e.name}**`,
+          `${e.description}`,
+          false
+        );
+      });
+
+      interaction.reply({ embeds: [embedBuilder] });
     } catch (error) {
       handleErrorMessage(interaction, error);
     }
