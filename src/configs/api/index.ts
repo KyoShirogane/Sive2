@@ -8,6 +8,8 @@ const api = {
   trade: `${process.env.API_URL}/${process.env.API_VERSION}/trades`,
   help: `${process.env.API_URL}/${process.env.API_VERSION}/guideline-config`,
   leaderboard: `${process.env.API_URL}/${process.env.API_VERSION}/leaderboard`,
+  work: `${process.env.API_URL}/${process.env.API_VERSION}/work`,
+  item: `${process.env.API_URL}/${process.env.API_VERSION}/item`,
 
 };
 

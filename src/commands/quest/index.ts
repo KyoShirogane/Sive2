@@ -9,7 +9,7 @@ import {
 } from "../../utilities/helper/index.js";
 
 @Discord()
-@SlashGroup("sive", "SIVE K-Pop Card Game", {
+@SlashGroup("sive-activity", "SIVE K-Pop Card Game", {
   quest: "Quest Related Commands for Card Game",
 })
 class QuestCommand {
