@@ -1,60 +1,40 @@
-# Installation
+# Installation Localhost
+- `Clone this project`
+- `cd Sive2`
+- `remove the .example from .env.example`
+- `set the environment variables`
+- `npm install`
+- `npm run serve`
 
-- `git clone https://github.com/oceanroleplay/discord.ts-example`
-- `cd discord.ts-example`
+# Server Deployment
+- `Clone this project`
+- `cd Sive2`
 - `npm install`
 - `npm run build`
 - `set BOT_TOKEN=<your bot token>`
+- `set API_URL=<the api url>`
+- `set API_VERSION=<the api version>`
+- `node build/client.js [I personally recommend to use pm2 package for server deployment]`
 
   if you don't have token yet than create one at [discord developer portal](https://discord.com/developers/)
 
-- `npm run start`
+  # Features
+  - `Fully integrating discord slash command`
+  - `Custom exception handling with discord embed builder and logging`
+  - `SIVE game integration made with typescript language`
+  
+  # Game Features
+  - `Card Summon`
+  - `Upgradeable rarity card`
+  - `Fully functioned shop + inventory system`
+  - `Fully functioned marketplace + trading system`
+  - `Deck system for card collection`
+  - `Card inventory with customizable search command`
+  - `Player profile with badge system`
+  - `Economy system with transfering balance system`
+  - `Quest system and work system`
+  - `Help system integrated with discord embed pagination with buttons`
+  - `Redeem system for player to gain prize`
 
-you are done, you will see your bot up and running. For detailed installation guide, please [see this](https://oceanroleplay.github.io/discord.ts/docs/installation)
-
-# Use CommonJS
-
-This repo is targed to use ECMAScript modules by default. Follow these steps to use CommonJS.
-
-## Update package.json
-
-```json
-{
-  // ...
-  "type": "commonjs",
-  // ...
-  "scripts": {
-    "build": "tsc",
-    "dev": "ts-node src/client.ts",
-    "start": "nodemon --exec ts-node src/client.ts",
-    "serve": "node build/client.js"
-  }
-  // ...
-}
-```
-
-## Update tsconfig.json
-
-```json
-{
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "CommonJS"
-    // ...
-  }
-}
-```
-
-## Update client.ts
-
-```ts
-async function run() {
-  // with cjs
-  await importx(__dirname + "/{events,commands}/**/*.{ts,js}");
-  // with ems
-  // await importx(dirname(import.meta.url) + "/{events,commands}/**/*.{ts,js}");
-  client.login(process.env.BOT_TOKEN ?? ""); // provide your bot token
-}
-```
-
-# Thank you
+  # API 
+  `For now the source code of the API is really messy and unorganized so if you want to deploy your own SIVE you can contact me at SIVE support server, Link to join the server: [https://discord.gg/ZJPPtaWdbB]`
