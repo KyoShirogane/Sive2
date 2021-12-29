@@ -70,4 +70,58 @@ class ItemCommand {
       handleErrorMessage(interaction, error);
     }
   }
+
+  @SlashGroup("exp")
+  @Slash("use", {
+    description: "Use EXP card to boost card statistics",
+  })
+  async useExpCard(
+    @SlashChoice("Vocal EXP", 1)
+    @SlashChoice("Rap EXP", 2)
+    @SlashChoice("Dance EXP", 3)
+    @SlashOption("attribute", {
+      description: "Attribute to boost",
+      required: true,
+    })
+    type: number,
+    @SlashOption("amount", {
+      description: "Amount of cards to use [Rate is quantity x 1.5]",
+      required: true,
+    })
+    amount: number,
+    @SlashOption("card-id", {
+      description: "ID of card to upgrade",
+      required: true,
+    })
+    cardId: number,
+    interaction: CommandInteraction
+  ) {
+    try {
+      let body = {
+        cardId: cardId,
+        amount: amount,
+        discordId: interaction.user.id,
+        expType: type
+      }
+  
+      const response = await axios.post(`${api.item}/exp-card/use`, body);
+
+      var data = response?.data;
+
+      const embedBuilder = new MessageEmbed().setAuthor(`Successfully upgrade stats`).setTitle(`Used ${amount} EXP Card from your inventory`).setColor(`GOLD`).setThumbnail(getAvatarUrl(interaction.client.user?.id, interaction.client.user?.avatar));
+
+      if(type === 1){
+        embedBuilder.setDescription(`Vocal EXP: ${data.previousExp} -> ${data.newExp}`)
+      }else if(type === 2){
+        embedBuilder.setDescription(`Rap EXP: ${data.previousExp} -> ${data.newExp}`)
+      }else{
+        embedBuilder.setDescription(`Dance EXP: ${data.previousExp} -> ${data.newExp}`)
+      }
+
+
+      interaction.reply({embeds: [embedBuilder]})
+    } catch (error) {
+      handleErrorMessage(interaction, error);
+    }
+  }
 }

@@ -23,6 +23,13 @@ class CardCommand {
   @SlashGroup("card")
   @Slash("list", { description: "Display all the cards you have" })
   async displayCard(
+    @SlashChoice("Sorted by Summoning time", "0")
+    @SlashChoice("Sorted by Group Name", "1")
+    @SlashOption("sort", {
+      description: "Card Sorting Parameter",
+      required: true,
+    })
+    sort: string,
     @SlashOption("search", {
       description: "Search Key for idol name, idol group and nationality",
       required: false,
@@ -44,13 +51,13 @@ class CardCommand {
       if (rarity === undefined) {
         body = {
           discordId: `${interaction.user.id}`,
-          sort: 0,
+          sort: sort,
         };
       } else {
         body = {
           discordId: `${interaction.user.id}`,
           rarity: rarity,
-          sort: 0,
+          sort: sort,
         };
       }
 

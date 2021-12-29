@@ -14,7 +14,7 @@ import {
 class WorkCommand {
   @SlashGroup("work")
   @Slash("current", {
-    description: "Display your current training activity",
+    description: "Display your current work activities",
   })
   async ongoingWork(
     @SlashChoice("Farming", "FARM")
