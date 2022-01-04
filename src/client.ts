@@ -16,7 +16,7 @@ const client = new Client({
     Intents.FLAGS.GUILD_VOICE_STATES,
   ],
   // If you only want to use guild commands, uncomment this line
-  botGuilds: [(client) => client.guilds.cache.map((guild) => guild.id)],
+  // botGuilds: [(client) => client.guilds.cache.map((guild) => guild.id)],
   // botGuilds: ["918015788257017937"],
   silent: true,
 });
