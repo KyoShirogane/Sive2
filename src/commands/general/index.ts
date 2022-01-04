@@ -47,55 +47,55 @@ class GeneralCommands {
     interaction.reply({ embeds: [embedBuilder] });
   }
 
-  @SlashGroup(`general`)
-  @Slash("server-info", { description: "Current Server Information" })
-  async serverInfo(interaction: CommandInteraction) {
-    const embedBuilder = new MessageEmbed()
-      .setThumbnail(
-        getAvatarUrl(
-          interaction.client.user?.id,
-          interaction.client.user?.avatar
-        )
-      )
-      .setColor(`GOLD`);
-    const owner = await interaction.guild?.fetchOwner();
+  // @SlashGroup(`general`)
+  // @Slash("server-info", { description: "Current Server Information" })
+  // async serverInfo(interaction: CommandInteraction) {
+  //   const embedBuilder = new MessageEmbed()
+  //     .setThumbnail(
+  //       getAvatarUrl(
+  //         interaction.client.user?.id,
+  //         interaction.client.user?.avatar
+  //       )
+  //     )
+  //     .setColor(`GOLD`);
+  //   const owner = await interaction.guild?.fetchOwner();
 
-    if (interaction.guild?.bannerURL() !== null) {
-      embedBuilder.setImage(interaction.guild?.bannerURL()!);
-    }
+  //   if (interaction.guild?.bannerURL() !== null) {
+  //     embedBuilder.setImage(interaction.guild?.bannerURL()!);
+  //   }
 
-    if (interaction.guild?.iconURL() !== null) {
-      embedBuilder.setThumbnail(interaction.guild?.iconURL()!);
-    }
-    embedBuilder.setAuthor(`${interaction.guild?.name.toUpperCase()}`);
-    embedBuilder.setTitle(`Server Information`);
-    embedBuilder.setColor(`GOLD`);
-    embedBuilder.setDescription(`Owned By ${owner?.displayName}`);
-    embedBuilder.addField(`Created At`, `${interaction.guild?.createdAt}`);
-    embedBuilder.addField(`Member Counts`, `${interaction.guild?.memberCount}`);
-    embedBuilder.addField(
-      `Text Channels`,
-      `${
-        interaction.guild?.channels.cache.filter((c) => c.type === "GUILD_TEXT")
-          .size
-      }`
-    );
-    embedBuilder.addField(
-      `Voice Channels`,
-      `${
-        interaction.guild?.channels.cache.filter(
-          (c) => c.type === "GUILD_VOICE"
-        ).size
-      }`
-    );
-    embedBuilder.addField(`Emotes`, `${interaction.guild?.emojis.cache.size}`);
-    embedBuilder.addField(`Roles`, `${interaction.guild?.roles.cache.size}`);
-    embedBuilder.setFooter(
-      `Requested By ${interaction.user.username.toUpperCase()}`
-    );
+  //   if (interaction.guild?.iconURL() !== null) {
+  //     embedBuilder.setThumbnail(interaction.guild?.iconURL()!);
+  //   }
+  //   embedBuilder.setAuthor(`${interaction.guild?.name.toUpperCase()}`);
+  //   embedBuilder.setTitle(`Server Information`);
+  //   embedBuilder.setColor(`GOLD`);
+  //   embedBuilder.setDescription(`Owned By ${owner?.displayName}`);
+  //   embedBuilder.addField(`Created At`, `${interaction.guild?.createdAt}`);
+  //   embedBuilder.addField(`Member Counts`, `${interaction.guild?.memberCount}`);
+  //   embedBuilder.addField(
+  //     `Text Channels`,
+  //     `${
+  //       interaction.guild?.channels.cache.filter((c) => c.type === "GUILD_TEXT")
+  //         .size
+  //     }`
+  //   );
+  //   embedBuilder.addField(
+  //     `Voice Channels`,
+  //     `${
+  //       interaction.guild?.channels.cache.filter(
+  //         (c) => c.type === "GUILD_VOICE"
+  //       ).size
+  //     }`
+  //   );
+  //   embedBuilder.addField(`Emotes`, `${interaction.guild?.emojis.cache.size}`);
+  //   embedBuilder.addField(`Roles`, `${interaction.guild?.roles.cache.size}`);
+  //   embedBuilder.setFooter(
+  //     `Requested By ${interaction.user.username.toUpperCase()}`
+  //   );
 
-    interaction.reply({ embeds: [embedBuilder] });
-  }
+  //   interaction.reply({ embeds: [embedBuilder] });
+  // }
 
   @SlashGroup(`game`)
   @Slash("help", { description: "Game Information" })
