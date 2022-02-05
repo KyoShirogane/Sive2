@@ -140,158 +140,96 @@ class CardCommand {
     interaction: CommandInteraction
   ) {
     try {
+      await interaction.deferReply();
+
       var response = await axios.post(`${api.card}/${id}`);
 
-      if (!response.data.graphic) {
-        const embedBuilder = new MessageEmbed();
+      var background;
 
-        var owner = await interaction.client.users.fetch(response.data.ownerId);
-
-        if (owner.bot) {
-          embedBuilder.setTitle(`***** CURRENTLY IN MARKET *****`);
+      try {
+        if (!response.data.graphic) {
+          background = await Canvas.loadImage(
+            getAvatarUrl(
+              interaction.client.user?.id,
+              interaction.client.user?.avatar
+            )
+          );
         } else {
-          embedBuilder.setTitle(`Owned By ${owner.tag}`);
+          background = await Canvas.loadImage(response.data.imageUrl);
         }
-
-        var lock = response.data.locked === true ? "🔒" : "";
-        var eraName =
-          response.data.imageName != null
-            ? "\n*****" + response.data.imageName + "*****\n"
-            : "";
-        var thumbnail =
-          response.data.imageUrl != null
-            ? response.data.imageUrl
-            : getAvatarUrl(
-                interaction.client.user?.id,
-                interaction.client.user?.avatar
-              );
-
-        embedBuilder.setAuthor(
-          `${lock}[${response.data.cardId}] ${response.data.fullName} - ${response.data.stageName}`
-        );
-        embedBuilder.setColor(
-          `#${response.data.cardColor.replaceAll("#", "")}`
-        );
-        embedBuilder.setImage(thumbnail);
-        embedBuilder.addField(
-          response.data.serialNumber,
-          response.data.rarity,
-          false
-        );
-        embedBuilder.addField("Hangul", response.data.koreanName, false);
-        embedBuilder.addField("Group Name", response.data.groupName, false);
-
-        if (response.data.imageName != null) {
-          embedBuilder.addField("Card Name", eraName, false);
-        }
-
-        embedBuilder.addField(
-          "Vocal",
-          response.data.vocalStats.toString(),
-          true
-        );
-        embedBuilder.addField("Rap", response.data.rapStats.toString(), true);
-        embedBuilder.addField(
-          "Dance",
-          response.data.danceStats.toString(),
-          true
-        );
-        embedBuilder.setFooter(
-          `Obtained At: ${convertDate(response.data.createdAt)}`,
+      } catch (error) {
+        background = await Canvas.loadImage(
           getAvatarUrl(
             interaction.client.user?.id,
             interaction.client.user?.avatar
           )
         );
-
-        interaction.reply({
-          embeds: [embedBuilder],
-        });
-      } else {
-        await interaction.deferReply();
-        var background = await Canvas.loadImage(response.data.imageUrl);
-
-        const canvas = Canvas.createCanvas(1120, 1670);
-        const context = canvas.getContext("2d");
-
-        // This uses the canvas dimensions to stretch the image onto the entire canvas
-        context.drawImage(background, 0, 0, canvas.width, canvas.height);
-
-        context.shadowBlur = 30;
-        context.shadowColor = "gold";
-
-        context.font = "900 90px sans-serif";
-        context.fillStyle = "#ffd700";
-        context.fillText(
-          `${response.data.rarity}`,
-          canvas.width * 0.025,
-          canvas.height * 0.975
-        );
-
-        context.shadowBlur = 60;
-        context.shadowColor = "black";
-
-        context.font = "400 78px sans";
-        context.fillStyle = "#ffffff";
-        context.fillText(
-          `${response.data.serialNumber}`,
-          canvas.width * 0.025,
-          canvas.height * 0.9
-        );
-        context.fillText(
-          `${response.data.groupName}`,
-          canvas.width * 0.025,
-          canvas.height * 0.825
-        );
-        context.fillText(
-          `${response.data.imageName}`,
-          canvas.width * 0.025,
-          canvas.height * 0.75
-        );
-        context.fillText(
-          `${response.data.stageName}`,
-          canvas.width * 0.025,
-          canvas.height * 0.675
-        );
-
-        var fileName = `${response.data.cardId}_${response.data.groupName.replaceAll(" ", "_")}_${response.data.stageName.replaceAll(" ", "_")}`
-        
-        // Use the helpful Attachment class structure to process the file for you
-        const attachment = new MessageAttachment(
-          canvas.toBuffer(),
-          `${fileName.toLowerCase()}.png`
-        );
-
-        await interaction.followUp({ files: [attachment] });
       }
-    } catch (error) {
-      handleErrorMessage(interaction, error);
-    }
-  }
 
-  @SlashGroup("card")
-  @Slash("lock", { description: "Lock/Unlock your card" })
-  async lockCard(
-    @SlashOption("id", {
-      description: "ID of the card",
-      required: true,
-    })
-    id: number,
-    interaction: CommandInteraction
-  ) {
-    const embedBuilder = new MessageEmbed();
+      const canvas = Canvas.createCanvas(1300, 1670);
+      const context = canvas.getContext("2d");
 
-    try {
-      let body = {
-        discordId: interaction.user.id,
-        cardId: id,
-      };
+      // This uses the canvas dimensions to stretch the image onto the entire canvas
+      context.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-      var response = await axios.post(`${api.card}/lock`, body);
+      context.shadowBlur = 30;
+      context.shadowColor = "gold";
+
+      context.font = "900 80px sans";
+      context.fillStyle = "#ffd700";
+      context.fillText(
+        `${response.data.rarity}`,
+        canvas.width * 0.025,
+        canvas.height * 0.975
+      );
+
+      context.shadowBlur = 90;
+      context.shadowColor = `${response.data.cardColor}`;
+
+      context.font = "700 78px sans";
+      context.fillStyle = `#ffffff`;
+      context.fillText(
+        `[${response.data.serialNumber}]`,
+        canvas.width * 0.025,
+        canvas.height * 0.05
+      );
+
+      context.fillText(
+        `${response.data.groupName}`,
+        canvas.width * 0.025,
+        canvas.height * 0.9
+      );
+
+      context.fillText(
+        `${response.data.fullName}`,
+        canvas.width * 0.025,
+        canvas.height * 0.825
+      );
+
+      context.fillText(
+        `${response.data.imageName} ${response.data.stageName}`,
+        canvas.width * 0.025,
+        canvas.height * 0.75
+      );
+
+      var fileName = `${
+        response.data.cardId
+      }_${response.data.groupName.replaceAll(
+        " ",
+        "_"
+      )}_${response.data.stageName.replaceAll(" ", "_")}`;
+
+      // Use the helpful Attachment class structure to process the file for you
+      const attachment = new MessageAttachment(
+        canvas.toBuffer(),
+        `${fileName.toLowerCase()}.png`
+      );
+
+      const embedBuilder = new MessageEmbed();
 
       var owner = await interaction.client.users.fetch(response.data.ownerId);
 
-      if (owner === interaction.client.user) {
+      if (owner.bot) {
         embedBuilder.setTitle(`***** CURRENTLY IN MARKET *****`);
       } else {
         embedBuilder.setTitle(`Owned By ${owner.tag}`);
@@ -302,19 +240,12 @@ class CardCommand {
         response.data.imageName != null
           ? "\n*****" + response.data.imageName + "*****\n"
           : "";
-      var thumbnail =
-        response.data.imageUrl != null
-          ? response.data.imageUrl
-          : getAvatarUrl(
-              interaction.client.user?.id,
-              interaction.client.user?.avatar
-            );
 
       embedBuilder.setAuthor(
         `${lock}[${response.data.cardId}] ${response.data.fullName} - ${response.data.stageName}`
       );
       embedBuilder.setColor(`#${response.data.cardColor.replaceAll("#", "")}`);
-      embedBuilder.setImage(thumbnail);
+      embedBuilder.setImage(`attachment://${fileName.toLowerCase()}.png`);
       embedBuilder.addField(
         response.data.serialNumber,
         response.data.rarity,
@@ -331,16 +262,171 @@ class CardCommand {
       embedBuilder.addField("Rap", response.data.rapStats.toString(), true);
       embedBuilder.addField("Dance", response.data.danceStats.toString(), true);
       embedBuilder.setFooter(
-        response.data.locked
-          ? `Card Is Successfully Locked`
-          : `Card Is Unlocked`,
+        `Obtained At: ${convertDate(response.data.createdAt)}`,
         getAvatarUrl(
           interaction.client.user?.id,
           interaction.client.user?.avatar
         )
       );
 
-      interaction.reply({ embeds: [embedBuilder], ephemeral: true });
+      await interaction.followUp({
+        embeds: [embedBuilder],
+        files: [attachment],
+      });
+    } catch (error) {
+      handleErrorMessage(interaction, error);
+    }
+  }
+
+  @SlashGroup("card")
+  @Slash("lock", { description: "Lock/Unlock your card" })
+  async lockCard(
+    @SlashOption("id", {
+      description: "ID of the card",
+      required: true,
+    })
+    id: number,
+    interaction: CommandInteraction
+  ) {
+    try {
+      await interaction.deferReply();
+
+      let body = {
+        discordId: interaction.user.id,
+        cardId: id,
+      };
+
+      var response = await axios.post(`${api.card}/lock`, body);
+
+      var background;
+
+      try {
+        if (!response.data.graphic) {
+          background = await Canvas.loadImage(
+            getAvatarUrl(
+              interaction.client.user?.id,
+              interaction.client.user?.avatar
+            )
+          );
+        } else {
+          background = await Canvas.loadImage(response.data.imageUrl);
+        }
+      } catch (error) {
+        background = await Canvas.loadImage(
+          getAvatarUrl(
+            interaction.client.user?.id,
+            interaction.client.user?.avatar
+          )
+        );
+      }
+
+      const canvas = Canvas.createCanvas(1300, 1670);
+      const context = canvas.getContext("2d");
+
+      // This uses the canvas dimensions to stretch the image onto the entire canvas
+      context.drawImage(background, 0, 0, canvas.width, canvas.height);
+
+      context.shadowBlur = 30;
+      context.shadowColor = "gold";
+
+      context.font = "900 80px sans";
+      context.fillStyle = "#ffd700";
+      context.fillText(
+        `${response.data.rarity}`,
+        canvas.width * 0.025,
+        canvas.height * 0.975
+      );
+
+      context.shadowBlur = 90;
+      context.shadowColor = `${response.data.cardColor}`;
+
+      context.font = "700 78px sans";
+      context.fillStyle = `#ffffff`;
+      context.fillText(
+        `[${response.data.serialNumber}]`,
+        canvas.width * 0.025,
+        canvas.height * 0.05
+      );
+
+      context.fillText(
+        `${response.data.groupName}`,
+        canvas.width * 0.025,
+        canvas.height * 0.9
+      );
+
+      context.fillText(
+        `${response.data.fullName}`,
+        canvas.width * 0.025,
+        canvas.height * 0.825
+      );
+
+      context.fillText(
+        `${response.data.imageName} ${response.data.stageName}`,
+        canvas.width * 0.025,
+        canvas.height * 0.75
+      );
+
+      var fileName = `${
+        response.data.cardId
+      }_${response.data.groupName.replaceAll(
+        " ",
+        "_"
+      )}_${response.data.stageName.replaceAll(" ", "_")}`;
+
+      // Use the helpful Attachment class structure to process the file for you
+      const attachment = new MessageAttachment(
+        canvas.toBuffer(),
+        `${fileName.toLowerCase()}.png`
+      );
+
+      const embedBuilder = new MessageEmbed();
+
+      var owner = await interaction.client.users.fetch(response.data.ownerId);
+
+      if (owner.bot) {
+        embedBuilder.setTitle(`***** CURRENTLY IN MARKET *****`);
+      } else {
+        embedBuilder.setTitle(`Owned By ${owner.tag}`);
+      }
+
+      var lock = response.data.locked === true ? "🔒" : "";
+      var eraName =
+        response.data.imageName != null
+          ? "\n*****" + response.data.imageName + "*****\n"
+          : "";
+
+      embedBuilder.setAuthor(
+        `${lock}[${response.data.cardId}] ${response.data.fullName} - ${response.data.stageName}`
+      );
+      embedBuilder.setColor(`#${response.data.cardColor.replaceAll("#", "")}`);
+      embedBuilder.setImage(`attachment://${fileName.toLowerCase()}.png`);
+      embedBuilder.addField(
+        response.data.serialNumber,
+        response.data.rarity,
+        false
+      );
+      embedBuilder.addField("Hangul", response.data.koreanName, false);
+      embedBuilder.addField("Group Name", response.data.groupName, false);
+
+      if (response.data.imageName != null) {
+        embedBuilder.addField("Card Name", eraName, false);
+      }
+
+      embedBuilder.addField("Vocal", response.data.vocalStats.toString(), true);
+      embedBuilder.addField("Rap", response.data.rapStats.toString(), true);
+      embedBuilder.addField("Dance", response.data.danceStats.toString(), true);
+      embedBuilder.setFooter(
+        `Obtained At: ${convertDate(response.data.createdAt)}`,
+        getAvatarUrl(
+          interaction.client.user?.id,
+          interaction.client.user?.avatar
+        )
+      );
+
+      await interaction.followUp({
+        embeds: [embedBuilder],
+        files: [attachment],
+      });
     } catch (error) {
       handleErrorMessage(interaction, error);
     }

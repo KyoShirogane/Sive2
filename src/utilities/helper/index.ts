@@ -62,10 +62,14 @@ export function combineQuestReward(items: any) {
   }
 }
 
-export function handleErrorMessage(
+export async function handleErrorMessage(
   interaction: CommandInteraction,
   error: any
 ) {
+  if(!interaction.deferred){
+    await interaction.deferReply();
+  }
+  
   if (error.code === "ECONNREFUSED") {
     const embedBuilder = new MessageEmbed()
 
@@ -121,6 +125,6 @@ export function handleErrorMessage(
       .setDescription(errorMessage)
       .setFooter(footer);
 
-    interaction.reply({ embeds: [embedBuilder], ephemeral: true });
+    await interaction.followUp({ embeds: [embedBuilder], ephemeral: true });
   }
 }
