@@ -37,7 +37,7 @@
     "@discordx/utilities": "^3.1.5",
     "axios": "^0.24.0",
     "canvas": "^2.9.0",
-    "discord-api-types": "^0.25.2",
+    "discord-api-types": "^0.37.10",
     "discord.js": "^13.3.1",
     "discordjs-button-embed-pagination": "^4.0.1",
     "discordx": "^9.0.1",
